@@ -1,11 +1,10 @@
-
 require "volunteer"
 require "project"
 require "rspec"
 require "pry"
 require "pg"
 
-DB = PG.connect({:dbname => 'volunteer_tracker_test'})
+DB = PG.connect({:dbname => 'ruby_week3_test'})
 
 RSpec.configure do |config|
   config.after(:each) do
