@@ -1,6 +1,6 @@
 class Volunteer
-  attr_reader :id
-  attr_accessor :name
+  attr_reader :name, :id
+  # attr_accessor :name
 
   def initialize(attributes)
     @name = attributes.fetch(:name)
@@ -8,117 +8,130 @@ class Volunteer
   end
 
   def save
-    result = DB.exec("INSERT INTO authors (name) VALUES ('#{@name}') RETURNING id;")
-    @id = result.first().fetch("id").to_i
+    result = DB.exec("INSERT INTO volunteers (name) VALUES ('#{@name}') RETURNING id;")
+    @id = result.first.fetch("id").to_i
   end
 
   # def update(name)
   #   @name = name
-  #   DB.exec("UPDATE authors SET name = '#{@name}' WHERE id = #{@id};")
+  #   DB.exec("UPDATE volunteers SET name = '#{@name}' WHERE id = #{@id};")
   # end
 
-  def ==(author_to_compare)
-    self.name() == author_to_compare.name()
+  def ==(volunteer_to_compare)
+    self.name() == volunteer_to_compare.name()
   end
 
   def self.all
-    self.get_authors("SELECT * FROM authors;")
+    returned_volunteers = DB.exec("SELECT * FROM volunteers;")
+    volunteers = []
+    returned_volunteers.each do |volunteer|
+      name = volunteer.fetch "name"
+      id = volunteer.fetch("id").to_i
+      volunteers.push(Volunteer.new({:name => name, :id => id}))
+    end
+    volunteers
   end
 
   def self.clear
-    DB.exec("DELETE FROM authors *;")
+    DB.exec("DELETE FROM volunteers *;")
   end
 
   def self.sort
-    self.get_authors("SELECT * FROM authors ORDER BY lower(name);")
-    # @books.values.sort {|a, b| a.name.downcase <=> b.name.downcase}
+    self.get_volunteers("SELECT * FROM volunteers ORDER BY lower(name);")
+    # @projects.values.sort {|a, b| a.name.downcase <=> b.name.downcase}
   end
 
   # def update(attributes)
   #   if (attributes.is_a? String)
   #     @name = attributes
-  #     DB.exec("UPDATE authors SET name = '#{@name}' WHERE id = #{@id};")
+  #     DB.exec("UPDATE volunteers SET name = '#{@name}' WHERE id = #{@id};")
   #   else
-  #     book_name = attributes.fetch(:book_name)
-  #     if book_name != nil
-  #       book = DB.exec("SELECT * FROM books WHERE lower(title)='#{book_name.downcase}';").first
-  #       if book != nil
-  #         DB.exec("INSERT INTO authors_books (books_id, authors_id) VALUES (#{book['id'].to_i}, #{@id});")
+  #     project_name = attributes.fetch(:project_name)
+  #     if project_name != nil
+  #       project = DB.exec("SELECT * FROM projects WHERE lower(title)='#{project_name.downcase}';").first
+  #       if project != nil
+  #         DB.exec("INSERT INTO volunteers_projects (projects_id, volunteers_id) VALUES (#{project['id'].to_i}, #{@id});")
   #       end
   #     end
   #   end
   # end
 
   def update(attributes)
-    if (attributes.is_a? String)
-      @name = attributes
-      DB.exec("UPDATE authors SET name = '#{@name}' WHERE id = #{@id};")
-    else
-      book_name = attributes.fetch(:book_name)
-      if book_name != nil
-        book = DB.exec("SELECT * FROM books WHERE lower(title)='#{book_name.downcase}';").first
-        if book != nil
-          DB.exec("INSERT INTO authors_books (books_id, authors_id) VALUES (#{book['id'].to_i}, #{@id});")
-        end
-      end
-    end
-  end
+    @name = attributes.fetch(:name)
+    @id = self.id
+    DB.exec("UPDATE volunteers SET name = '#{@name}' WHERE id = #{@id};")
+  #   if (attributes.is_a? String)
+  #     @name = attributes
+  #     DB.exec("UPDATE volunteers SET name = '#{@name}' WHERE id = #{@id};")
+  #   else
+  #     project_name = attributes.fetch(:project_name)
+  #     if project_name != nil
+  #       project = DB.exec("SELECT * FROM projects WHERE lower(title)='#{project_name.downcase}';").first
+  #       if project != nil
+  #         DB.exec("INSERT INTO volunteers_projects (projects_id, volunteers_id) VALUES (#{project['id'].to_i}, #{@id});")
+  #       end
+  #     end
+  #   end
+  # end
 
   def self.find(id)
-    author = DB.exec("SELECT * FROM authors WHERE id = #{id};").first
-    name = author.fetch("name")
-    id = author.fetch("id").to_i
-    Author.new({:name => name, :id => id})
+    returned_volunteer = nil
+    Volunteer.all.each do |volunteer|
+      if volunteer.id == id
+        returned_volunteer = volunteer
+      end
+    end
+    returned_volunteer
   end
 
   def delete
-    DB.exec("DELETE FROM authors_books WHERE authors_id = #{@id};")
-    DB.exec("DELETE FROM authors WHERE id = #{@id};")
+    # DB.exec("DELETE FROM volunteers_projects WHERE volunteers_id = #{@id};")
+    DB.exec("DELETE FROM volunteers WHERE id = #{@id};")
   end
 
-  def books
-  books = []
-  results = DB.exec("SELECT books_id FROM authors_books WHERE authors_id = #{@id};")
+  def projects
+  projects = []
+  results = DB.exec("SELECT projects_id FROM volunteers_projects WHERE volunteers_id = #{@id};")
     results.each() do |result|
-      books_id = result.fetch("books_id").to_i()
-      book = DB.exec("SELECT * FROM books WHERE id = #{books_id};")
+      projects_id = result.fetch("projects_id").to_i()
+      project = DB.exec("SELECT * FROM projects WHERE id = #{projects_id};")
 binding.pry
-      title = book.fetch("title")
-      books.push(Book.new({:title => title, :id => books_id}))
+      title = project.fetch("title")
+      projects.push(Book.new({:title => title, :id => projects_id}))
     end
-    books
+    projects
   end
-    # id_string = results.first.fetch("books_id").to_i()
-    # (id_string != '') ? Book.get_books("SELECT * FROM books where ID in (#{id_string});") : []
+    # id_string = results.first.fetch("projects_id").to_i()
+    # (id_string != '') ? Book.get_projects("SELECT * FROM projects where ID in (#{id_string});") : []
 
 
 
   # results.each() do |result|
-  #   book_id = result.fetch("book_id").to_i()
-  #   book = DB.exec("SELECT * FROM books WHERE id = #{book_id};").first()
-  #   name = book.fetch("name").join(', ')
-  #   release_year = book.fetch("release_year")
-  #   genre = book.fetch("genre")
-  #   author = book.fetch("author")
-  #   books.push(Album.new({:name => name, :id => book_id, :release_year => release_year, :genre => genre, :author => author}))
+  #   project_id = result.fetch("project_id").to_i()
+  #   project = DB.exec("SELECT * FROM projects WHERE id = #{project_id};").first()
+  #   name = project.fetch("name").join(', ')
+  #   release_year = project.fetch("release_year")
+  #   genre = project.fetch("genre")
+  #   volunteer = project.fetch("volunteer")
+  #   projects.push(Album.new({:name => name, :id => project_id, :release_year => release_year, :genre => genre, :volunteer => volunteer}))
   # end
-  # books
+  # projects
 
 
-def self.get_authors(query)
-  returned_authors = DB.exec(query)
-  authors = []
-  returned_authors.each() do |author|
-    name = author.fetch("name")
-    id = author.fetch("id").to_i
-    authors.push(Author.new({:name => name, :id => id}))
+def self.get_volunteers(query)
+  returned_volunteers = DB.exec(query)
+  volunteers = []
+  returned_volunteers.each() do |volunteer|
+    name = volunteer.fetch("name")
+    id = volunteer.fetch("id").to_i
+    volunteers.push(Volunteer.new({:name => name, :id => id}))
   end
-  authors
+  volunteers
 end
 
 def self.search(x)
-  self.get_authors("SELECT * FROM authors WHERE name ILIKE '%#{x}%'")
-  # @books.values.select { |e| /#{x}/i.match? e.name}
+  self.get_volunteers("SELECT * FROM volunteers WHERE name ILIKE '%#{x}%'")
+  # @projects.values.select { |e| /#{x}/i.match? e.name}
 end
-
+end
 end
