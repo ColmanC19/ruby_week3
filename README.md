@@ -1,8 +1,10 @@
 # ruby_week3
-Week 3 Independent project in class
-Routing with Databases in Ruby
+## Week 3 Independent project in class
+_Routing with Databases in Ruby_
 This application was built out with the spec files already written. Meaning I had access to the tests, and built the code to pass each test. The application will track projects and the volunteers working on them. Each volunteer will belong to only one project (one project, many volunteers).This is an Independent ptoject done while at Epicodus. It will deploy to heroku using Ruby and sinatra. 1.10.2019
-By Colman Currie
+
+
+## By Colman Currie
 Description
 This allows practice with sinatra, heroku and get/post methods in Ruby.
 Setup/Installation Requirements
@@ -16,7 +18,7 @@ Then you will call the directory using your terminal, make sure you're in the de
 
 To view the code, simply click on the lib/ruby-week3.rb file.
 
-*Heroku address is : 
+*Heroku address is :
 
 This project uses the lates versions of Ruby and the Gems included in the project.
 
